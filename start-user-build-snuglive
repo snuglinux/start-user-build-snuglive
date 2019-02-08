@@ -1,0 +1,64 @@
+#!/bin/bash
+
+iso_name=snuglinux
+
+sudo_http=`grep "http ALL=(ALL:ALL) NOPASSWD:/bin/start-user-snuglive" /etc/sudoers`
+if [ -z "$sudo_http" ]; then
+   echo "Error: sudoers not configured, add: http ALL=(ALL:ALL) NOPASSWD:/bin/start-user-snuglive"
+   exit 1;
+fi
+
+if ! [ -f  /etc/start-user-build-snuglive.conf ]; then
+   echo "Error: configuration file not found /etc/start-user-build-snuglive.conf "
+   exit 1;
+else
+   source /etc/start-user-build-snuglive.conf
+fi
+
+if [ -z "$PATH_TO_SNUGLIVE" ]; then
+   echo "Error: parameter 'PATH_TO_SNUGLIVE' does not fill!"
+   exit 1;
+fi
+
+if ! [ -d "$PATH_TO_SNUGLIVE" ]; then
+  echo "Error: the path does not exist $PATH_TO_SNUGLIVE !"
+  exit 1;
+fi
+
+if ! [ -f  "$PATH_TO_SNUGLIVE/build-snuglive.sh" ]; then
+   echo "Error: file not found $PATH_TO_SNUGLIVE/build-snuglive.sh "
+   exit 1;
+fi
+
+if [ -z "$PATH_TO_ISO" ]; then
+   echo "Error: parameter 'PATH_TO_ISO' does not fill!"
+   exit 1;
+fi
+
+if ! [ -d "$PATH_TO_ISO" ]; then
+   mkdir $PATH_TO_ISO
+fi
+
+cd $PATH_TO_SNUGLIVE
+sudo ./build-snuglive.sh
+if [ $? = 1 ]; then
+   exit 1;
+fi
+
+# перемещение iso
+iso_file=`find . -name ${iso_name}'-*-x86_64.iso'`
+if [ -f "${iso_file}" ]; then
+   cp -f "${iso_file}" "$PATH_TO_ISO"
+   if [ "$?" = 0 ]; then
+      echo "Copy file ${iso_file}"
+      md5sum=$(md5sum "${iso_file}")
+      md5sum=${md5sum%% *}
+      file_str=`basename ${iso_file%.*}`
+      echo $md5sum > "$PATH_TO_ISO/${file_str}.md5"
+      echo "Created file ${file_str}.md5"
+      rm "${iso_file}"
+      if [ "$?" = 0 ]; then
+         echo "File ${iso_file} deleted"
+      fi
+   fi
+fi
