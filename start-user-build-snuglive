@@ -2,9 +2,9 @@
 
 iso_name=snuglinux
 
-sudo_http=`grep "http ALL=(ALL:ALL) NOPASSWD:/bin/start-user-snuglive" /etc/sudoers`
+sudo_http=`grep "http ALL=(ALL:ALL) NOPASSWD:/bin/start-user-build-snuglive" /etc/sudoers`
 if [ -z "$sudo_http" ]; then
-   echo "Error: sudoers not configured, add: http ALL=(ALL:ALL) NOPASSWD:/bin/start-user-snuglive"
+   echo "Error: sudoers not configured, add: http ALL=(ALL:ALL) NOPASSWD:/bin/start-user-build-snuglive"
    exit 1;
 fi
 
